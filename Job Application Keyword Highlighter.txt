@@ -14,6 +14,7 @@
     "use strict";
     let active = true;
     const HIGHLIGHTER_CLASS = "__keyword_highlighter_davi_caamano_15315_mark";
+    const MISSING_BG_COLOR = 'pink';
     const BOLD_ITALIC = {
         bold: true,
         italic: false ,
@@ -208,18 +209,22 @@
     ];
 
     // --- Highlighters ---
-    const applySpanStyle = (span, { background, bold, italic }) => {
-        if (background) span.style.background = background;
-        if (bold) span.style.fontWeight = "700";
-        if (italic) span.style.fontStyle = "italic";
-        span.style.padding = "0 2px";
-        span.style.borderRadius = "2px";
+    const applySpanStyle = (span, style) => {
+        //defaults
+        span.style.background = style.background || MISSING_BG_COLOR;
+        span.style.fontWeight = style.fontWeight || "700";
+        span.style.fontStyle = style.fontStyle || "italic";
+        span.style.padding = style.padding || "0 4px";
+        span.style.borderRadius = style.borderRadius || "50%";
     }
 
     // Highlights matches for a regex by wrapping only the matched substrings in spans
-    const highlightMatchesInTextNode = (textNode, regex, styleOptions, edgeBg) => {
+    const highlightMatchesInTextNode = (textNode, regex, style, edgeBg) => {
+        if(textNode?.classList?.contains?.(HIGHLIGHTER_CLASS)){
+            return 0;
+        }
         const text = textNode.nodeValue;
-        //regex.lastIndex = 0;
+        regex.lastIndex = 0;
 
         let match;
         let lastIdx = 0;
@@ -237,9 +242,11 @@
 
             const mark = document.createElement("span");
             const edge = document.createElement("span");
+            mark.classList.add(HIGHLIGHTER_CLASS);
+            edge.classList.add(HIGHLIGHTER_CLASS);
             mark.textContent = text.slice(start, end);
-            applySpanStyle(mark, styleOptions);
-            applySpanStyle(edge, { ...styleOptions, background: edgeBg, padding: '0px 4px' });
+            applySpanStyle(mark, style);
+            applySpanStyle(edge, { ...style, background: edgeBg, padding: '0px 12px', borderRadius: '50%' });
 
             edge.appendChild(mark);
             frag.appendChild(edge);
@@ -310,8 +317,8 @@
         for (const tn of textNodes) {
 
             for(const { keywords, style, edgeBg } of COLORED_KEYWORDS) {
+
                 for(const keyword of keywords){
-                    console.log('keyword', keyword);
                     // Wrap created spans with a class so we can avoid re-processing
                     const replaced = highlightMatchesInTextNode(tn, keyword, style, edgeBg);
 
@@ -335,7 +342,7 @@
     }
 
     let iter = 0;
-    const MAX_ITER = 20;
+    const MAX_ITER = 10;
     let startUpInterval;
     const handleKeyPress = (event) => {
         if (event.altKey) {
@@ -343,7 +350,7 @@
                 active = false;
             } else if(event.key.toLowerCase() === "`") {
                 active = true;
-                startUp();
+                runHighlighters();
             }
         }
     };
