@@ -232,7 +232,7 @@
                 click(clickableTitle);
 
                 // Wait to avoid Code 429 before copying code
-                await sleep(1250);
+                await sleep(1000);
                 copyJob(job);
 
                 // Crawl Next Job on List

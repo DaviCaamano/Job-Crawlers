@@ -1,0 +1,153 @@
+// ==UserScript==
+// @name         Quick Paste
+// @namespace    http://tampermonkey.net/
+// @version      2026-02-10
+// @description  try to take over the world!
+// @author       You
+// @match        *://*/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com
+// @grant        GM_setValue
+// @grant        GM_getValue
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    const hotKeys = {
+        '0': 'DaviSantaCaamano@gmail.com',
+        '1': 'Davi',
+        '2': 'Caamano',
+        '3': '7868790802',
+        '4': '12933 sw 210 terrace',
+        '5': 'Miami',
+        '6': '33177',
+        '7': 'https://www.linkedin.com/in/davi-caamano-8a440b157/',
+        '8': 'https://DaviCaamano.com/',
+        '9': 'https://github.com/DaviCaamano',
+    }
+    const LOCAL_STORAGE_KEY = 'tamper-monkey-quick-paste';
+    const LOCAL_DATA_DEFAULT = { enabled: true };
+    let enabled = GM_getValue(LOCAL_STORAGE_KEY, LOCAL_DATA_DEFAULT).enabled;
+
+    const describeHotKeys = () => {
+        let description = 'Short Cuts:<br />Enable: Ctrl -<br />';
+        let first = true;
+        for(let key in hotKeys){
+            if(first){
+                first = false;
+            }
+            description += `${key}: ${hotKeys[key]}<br />`;
+        }
+        return description;
+    }
+    let toastElement;
+
+    // Raise a on-screen message (toast)
+    const toast = (msg, ms = 2000) => {
+        console.log('toast:', msg);
+        toastElement?.remove();
+        toastElement = document.createElement("div");
+        toastElement.innerHTML = msg;
+        Object.assign(toastElement.style, {
+            position: "fixed",
+            top: '400px',
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            padding: "20px 24px",
+            borderRadius: "8px",
+            background: "rgba(0,0,0,0.85)",
+            color: "white",
+            fontSize: "36px",
+            zIndex: 999999,
+            maxWidth: "40vw",
+            lineHeight: "1.3",
+        });
+        document.body.appendChild(toastElement);
+        setTimeout(() => toastElement.remove(), ms);
+    }
+
+    const insertText = (text, el) => {
+
+        // INPUT / TEXTAREA
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+            const start = el.selectionStart ?? el.value.length;
+            const end = el.selectionEnd ?? el.value.length;
+
+            el.focus();
+            el.setRangeText(text, start, end, "end");
+
+            // Trigger frameworks (React/Vue/etc)
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+            return;
+        }
+
+        // contenteditable
+        if (el.isContentEditable) {
+            el.focus();
+            const sel = window.getSelection();
+            if (!sel) return;
+
+            if (sel.rangeCount === 0) {
+                el.appendChild(document.createTextNode(text));
+            } else {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(text));
+
+                // Move caret after inserted text
+                range.setStart(range.endContainer, range.endOffset);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+    }
+
+    window.addEventListener(
+        "keydown",
+        (e) => {
+            if(e?.ctrlKey && e?.key === '-'){
+                if(enabled) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                toast(enabled ? 'Disabling Quick Paste' : 'Enabling Quick Paste', 10000);
+                enabled = !enabled;
+                GM_setValue(LOCAL_STORAGE_KEY, { enabled });
+                return;
+            }
+            if(!enabled){
+                return;
+            }
+            if(e?.ctrlKey && e?.key === '/'){
+                toast(describeHotKeys(), 10000);
+                return;
+            }
+            const el = document.activeElement;
+            if (!el || !e.code.startsWith('Numpad')) return;
+
+            const isTextInput =
+                  (el.tagName === "INPUT" &&
+                   !["button", "checkbox", "color", "file", "hidden", "image", "radio", "range", "reset", "submit"].includes(
+                      (el.getAttribute("type") || "text").toLowerCase()
+                  )) ||
+                  el.tagName === "TEXTAREA" ||
+                  el.isContentEditable;
+
+            if (!isTextInput) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const key = e?.key;
+            console.log('key', key)
+
+            if(/^[0-9]$/.test(key) && !!hotKeys[key]){
+                insertText(hotKeys[key], el);
+            }
+        },
+        true // capture helps on sites that stopPropagation
+    );
+
+})();
