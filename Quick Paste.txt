@@ -66,14 +66,66 @@
     }
 
     const insertText = (text, el) => {
+        const setNativeValue = (element, value) => {
+            // Helps frameworks like React detect the change reliably
+            const proto = element.tagName === "TEXTAREA"
+            ? HTMLTextAreaElement.prototype
+            : HTMLInputElement.prototype;
+
+            const valueSetter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+            valueSetter ? valueSetter.call(element, value) : (element.value = value);
+        };
+
+        const safeGetSelection = (element) => {
+            // Some input types (e.g. email) can throw when reading selectionStart/End
+            let start, end;
+            try {
+                start = element.selectionStart;
+                end = element.selectionEnd;
+            } catch {
+                start = null;
+                end = null;
+            }
+            return { start, end };
+        };
 
         // INPUT / TEXTAREA
         if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-            const start = el.selectionStart ?? el.value.length;
-            const end = el.selectionEnd ?? el.value.length;
-
             el.focus();
-            el.setRangeText(text, start, end, "end");
+
+            const { start, end } = safeGetSelection(el);
+            const hasSelection = typeof start === "number" && typeof end === "number";
+
+            // Best path (works for text-like inputs)
+            if (hasSelection && typeof el.setRangeText === "function") {
+                try {
+                    el.setRangeText(text, start, end, "end");
+                } catch (err) {
+                    // Fallback for types like email where setRangeText can throw
+                    const cur = el.value ?? "";
+                    const next = cur + text;
+                    setNativeValue(el, next);
+                }
+            } else {
+                // Fallback (email, number, etc.) — append or replace whole value logic
+                const cur = el.value ?? "";
+                // If selection info exists, insert at caret; otherwise append.
+                const next = hasSelection
+                ? cur.slice(0, start) + text + cur.slice(end)
+                : cur + text;
+
+                setNativeValue(el, next);
+
+                // Try to restore caret if the browser supports it (won’t on email)
+                if (hasSelection) {
+                    const pos = start + text.length;
+                    try {
+                        el.setSelectionRange(pos, pos);
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
 
             // Trigger frameworks (React/Vue/etc)
             el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -103,7 +155,7 @@
 
             el.dispatchEvent(new Event("input", { bubbles: true }));
         }
-    }
+    };
 
     window.addEventListener(
         "keydown",

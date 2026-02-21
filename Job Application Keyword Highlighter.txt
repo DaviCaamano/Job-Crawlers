@@ -58,6 +58,7 @@
         "onsite",
         "on site",
         "on-site",
+        "call for referral",
     ]
     const COMPANIES_TO_AVOID = [
         "Rithum",
@@ -99,6 +100,10 @@
         "Graph-QL",
     ]
 
+    const POSITIVE_JOB_QUALITIES = [
+        'remote'
+    ];
+
     const GOOD_TECH_LIST = [
         'Next.Js',
         'NextJs',
@@ -139,12 +144,11 @@
 
     const PURPLE_KEYWORDS = [
         ...BAD_TECH_LIST,
-        ...POTENTIALLY_DISQUALIFYING_APPLICATION,
     ].map(i => i.toLowerCase());
 
     const RED_KEYWORDS = [
         ...COMPANIES_TO_AVOID,
-        "call for referral",
+        ...POTENTIALLY_DISQUALIFYING_APPLICATION,
     ].map(i => i.toLowerCase());
 
     const GREEN_KEYWORDS = [...GOOD_TECH_LIST].map(i => i.toLowerCase());
@@ -343,7 +347,7 @@
     }
 
     let iter = 0;
-    const MAX_ITER = 10;
+    const MAX_ITER = 30;
     let startUpInterval;
     const handleKeyPress = (event) => {
         if (event.altKey) {
@@ -367,6 +371,6 @@
     document.addEventListener("keydown", handleKeyPress, false);
 
     // Run once shortly after load
-    startUpInterval = setTimeout(() => setInterval(startUp, 1000), 1000);
+    startUpInterval = setTimeout(() => setInterval(startUp, 500), 1000);
 
 })();
