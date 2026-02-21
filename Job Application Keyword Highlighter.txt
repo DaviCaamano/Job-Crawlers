@@ -24,25 +24,26 @@
         background: "plum", // purple-ish; change to "purple" if you want very strong contrast
         ...BOLD_ITALIC
     };
-    const PURPLE_KEYWORDS_EDGE_BG = 'purple'
+    const PURPLE_KEYWORDS_EDGE_BG = '#be89be'
 
     const YELLOW_KEYWORD_STYLE = {
         background: "yellow",
         ...BOLD_ITALIC
     };
-    const YELLOW_KEYWORDS_EDGE_BG = 'orange'
+    const YELLOW_KEYWORDS_EDGE_BG = '#ffd27e'
 
     const RED_KEYWORD_STYLE =  {
-        background: "red",
+        background: "#860505",
+        color: 'white',
         ...BOLD_ITALIC
     };
-    const RED_KEYWORDS_EDGE_BG = 'darkred'
+    const RED_KEYWORDS_EDGE_BG = '#da2929'
 
     const GREEN_KEYWORD_STYLE =  {
         background: "#aeffae",
         ...BOLD_ITALIC
     };
-    const GREEN_KEYWORDS_EDGE_BG = 'green'
+    const GREEN_KEYWORDS_EDGE_BG = '#8fd68f'
 
     const GRAY_KEYWORD_STYLE =  {
         background: "lightgray",
@@ -99,7 +100,6 @@
     ]
 
     const GOOD_TECH_LIST = [
-        'Next',
         'Next.Js',
         'NextJs',
         'Node',
@@ -215,7 +215,8 @@
         span.style.fontWeight = style.fontWeight || "700";
         span.style.fontStyle = style.fontStyle || "italic";
         span.style.padding = style.padding || "0 4px";
-        span.style.borderRadius = style.borderRadius || "50%";
+        span.style.borderRadius = style.borderRadius || "10px%";
+        span.style.color = style.color || span.style.color;
     }
 
     // Highlights matches for a regex by wrapping only the matched substrings in spans
@@ -246,7 +247,7 @@
             edge.classList.add(HIGHLIGHTER_CLASS);
             mark.textContent = text.slice(start, end);
             applySpanStyle(mark, style);
-            applySpanStyle(edge, { ...style, background: edgeBg, padding: '0px 12px', borderRadius: '50%' });
+            applySpanStyle(edge, { ...style, background: edgeBg, padding: '0px 6px', borderRadius: '3px' });
 
             edge.appendChild(mark);
             frag.appendChild(edge);
