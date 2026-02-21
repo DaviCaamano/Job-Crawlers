@@ -20,11 +20,11 @@
         italic: false ,
     }
     // High Lighter Styles
-    const PURPLE_KEYWORD_STYLE = {
-        background: "plum", // purple-ish; change to "purple" if you want very strong contrast
+    const ORANGE_KEYWORD_STYLE = {
+        background: "#ff8863", // purple-ish; change to "purple" if you want very strong contrast
         ...BOLD_ITALIC
     };
-    const PURPLE_KEYWORDS_EDGE_BG = '#be89be'
+    const ORANGE_KEYWORDS_EDGE_BG = 'rgb(229 92 92)'
 
     const YELLOW_KEYWORD_STYLE = {
         background: "yellow",
@@ -59,6 +59,9 @@
         "on site",
         "on-site",
         "call for referral",
+        "word press",
+        "wordpress",
+        'Clearance',
     ]
     const COMPANIES_TO_AVOID = [
         "Rithum",
@@ -68,10 +71,16 @@
         "helixrecruit",
         "underdog.io",
         'Roblox',
+        'bitpay',
+        'imentor',
+        'Bright Vision Technologies',
+        'servicecore',
+        'service core',
+        'Trapp Technology',
+        'Trust & Will'
     ]
 
     const BAD_TECH_LIST = [
-        "python",
         "c#",
         "c++",
         "golang",
@@ -80,14 +89,9 @@
         "ruby on rails",
         ".net",
         "java",
-        "word press",
-        "wordpress",
         "Django",
         "Vue.js",
         "PHP",
-        "React Native",
-        "ReactNative",
-        "React-Native",
         "Kotlin",
         "Groovy",
         "Spring Boot",
@@ -98,6 +102,10 @@
         "GraphQL",
         "Graph QL",
         "Graph-QL",
+        "Shopify",
+        'web3',
+        'webflow',
+        'Ecommerce',
     ]
 
     const POSITIVE_JOB_QUALITIES = [
@@ -136,7 +144,13 @@
         'Angular',
         'Angular.Js',
         'Angularjs',
+        "python",
+        'fastapi',
     ]
+
+    const WORDS_OF_INTEREST = [
+        'years'
+    ];
 
     const YELLOW_KEYWORDS = [
         //Saving this for just "react" for now. Regex for this is below.
@@ -153,7 +167,7 @@
 
     const GREEN_KEYWORDS = [...GOOD_TECH_LIST].map(i => i.toLowerCase());
 
-    const GRAY_KEYWORDS = [...MEH_TECH_LIST].map(i => i.toLowerCase());
+    const GRAY_KEYWORDS = [...MEH_TECH_LIST, ...WORDS_OF_INTEREST].map(i => i.toLowerCase());
 
     const getKeywordRegex = (words) => {
         if(!words?.length) { return undefined;}
@@ -206,7 +220,7 @@
 
     const COLORED_KEYWORDS = [
         { keywords: YELLOW_KEYWORDS_RE, style: YELLOW_KEYWORD_STYLE, edgeBg: YELLOW_KEYWORDS_EDGE_BG},
-        { keywords: PURPLE_KEYWORDS_RE, style: PURPLE_KEYWORD_STYLE, edgeBg: PURPLE_KEYWORDS_EDGE_BG },
+        { keywords: PURPLE_KEYWORDS_RE, style: ORANGE_KEYWORD_STYLE, edgeBg: ORANGE_KEYWORDS_EDGE_BG },
         { keywords: RED_KEYWORDS_RE, style: RED_KEYWORD_STYLE, edgeBg: RED_KEYWORDS_EDGE_BG },
         { keywords: GREEN_KEYWORDS_RE, style: GREEN_KEYWORD_STYLE, edgeBg: GREEN_KEYWORDS_EDGE_BG },
         { keywords: GRAY_KEYWORDS_RE, style: GRAY_KEYWORD_STYLE, edgeBg: GRAY_KEYWORDS_EDGE_BG },
