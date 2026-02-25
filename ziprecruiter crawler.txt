@@ -26,22 +26,25 @@
     let stopFunc = { ...STOP_FUNC_DEFAULT, firstRun: true };
     // Flag for in progress crawl operation.
     let crawlerInProgress = false;
-
+    let startTime;
     const JOB_ITEM_SELECTOR = 'section.job_results_two_pane > div.job_result_two_pane_v2';
     const TITLE_SELECTOR = 'article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     + ' > div:first-of-type > button:first-of-type > div:first-of-type > div:first-of-type > h2';
-
     const JOB_DESCRIPTION_SELECTOR = '.text-primary.whitespace-pre-line.wrap-anywhere'
-
+    const JOB_TTL_AMT_SELECTOR = '#serp_content_skip > p';
+    const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
 
     //article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     //+ ' > div:first-of-type > div:first-of-type >
     const JOB_SALARY_SELECTOR = 'div.break-all > p';
 
-    const NEXT_PAGE_BUTTON_SELECTOR = 'button[title="Next Page"]';
+    const NEXT_PAGE_BUTTON_SELECTOR = 'a[title="Next Page"]';
 
     const JOB_DIVIDER_TEXT = '\n=-=-=-=-=\n';
     const MAX_JOB_PROCESS_ATTEMPTS = 10;
+    const ONE_SECOND = 1000;
+    const ONE_MINUTE_IN_SECONDS = 60
+    const ONE_HOUR = 3600000
 
     let jobData = GM_getValue(LOCAL_STORAGE_KEY, LOCAL_DATA_DEFAULT).jobData || '';
     let page = 0;
@@ -62,7 +65,7 @@
     }
 
     // Raise a on-screen message (toast)
-    const toast = (msg, ms = 2000) => {
+    const toast = (msg, ms = 10000) => {
         console.log('Toast:', msg);
         toastElement?.remove();
         toastElement = document.createElement("div");
@@ -80,6 +83,10 @@
             zIndex: 999999,
             maxWidth: "40vw",
             lineHeight: "1.3",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
         });
         document.body.appendChild(toastElement);
         setTimeout(() => toastElement.remove(), ms);
@@ -133,6 +140,38 @@
         return salary ? `\nSALARY: ${salary}\n`: ''
     }
 
+    const getJobTtlAmt = () => {
+        const jobTtlAmtSpan = document.querySelector(JOB_TTL_AMT_SELECTOR);
+        return (jobTtlAmtSpan.innerText || jobTtlAmtSpan.textContent || jobTtlAmtSpan.innerHtml || "").replace(/\D/g, "")
+    }
+
+    const toastJobUpdate = (jobNo, skipped = 0) => {
+        if (!startTime) {
+            alert("Error: toastJobUpdate called with unset start time");
+            return;
+        }
+
+        const pad2 = (n) => String(Math.floor(n)).padStart(2, "0");
+
+        const timeInSeconds = parseFloat((performance.now() - startTime) / ONE_SECOND); // number
+        const hours = Math.floor(timeInSeconds / ONE_HOUR);
+
+        let remaining_time = timeInSeconds - hours * ONE_HOUR;
+        const minutes = Math.floor(remaining_time / ONE_MINUTE_IN_SECONDS);
+        const seconds = Math.floor(remaining_time % ONE_MINUTE_IN_SECONDS);
+
+        // Always show mm:ss, and if hours exist show hh:mm:ss (with leading zeros)
+        const timeStr = `${hours > 0 ? pad2(hours) + ':': ''}${pad2(minutes)}:${pad2(seconds)}`
+
+        let jobTtlAmtText = getJobTtlAmt();
+        jobTtlAmtText = jobTtlAmtText ? ` / ${jobTtlAmtText}`: '';
+
+        const skippedJobsText = skipped ? `<br /> ${skipped} Skipped`: ''
+
+        toast(`Job: ${jobNo}${jobTtlAmtText} <br/> ${timeStr}${skippedJobsText}`);
+    };
+
+
     const cleanJobData = () => {
         jobData = jobData.replace(/(\s*\n){3,}/g, "\n\n")
             .replace(/[ \t]{2,}/g, " ")
@@ -166,8 +205,10 @@
 
 
     const jobCollector = async () => {
+        startTime = performance.now();
         crawlerInProgress = true;
         let jobList, maxJobs;
+        let jobsSkipped = 0;
 
         // Returns elements needed for iterating through list of jobs.
         const getJobListElements = () => {
@@ -184,9 +225,10 @@
             page += 1;
             // Move to next page or finish crawl
             const button = document.querySelector(NEXT_PAGE_BUTTON_SELECTOR);
+            console.log('button', button.disalbed, button);
             if(!button || button.disabled){
-                alert('Crawl Complete, press alt-2 to copy results to clipboard')
                 copyJobDataToClipboard();
+                alert('Crawl Complete, press alt-2 to copy results to clipboard')
             } else {
                 click(button);
                 toast('Moving to next page...');
@@ -196,7 +238,7 @@
             }
         }
 
-        const reattempt = async (iter, attempt, { job, jobId }) => {
+        const reattempt = async (iter, attempt, { job }) => {
             if(attempt > MAX_JOB_PROCESS_ATTEMPTS) {
                 toast(`Unable to load Job #${iter + 1} on list, Skipping...`);
                 processJob(iter + 1)
@@ -223,8 +265,8 @@
 
             const clickableTitle = job?.querySelector(TITLE_SELECTOR);
             if(clickableTitle) {
-                const jobNo = page * jobs_per_page + iter  + 1;
-                toast(`Clicking #${jobNo}`, 900);
+                const jobNo = page * jobs_per_page + iter + 1;
+                toastJobUpdate(jobNo, jobsSkipped);
                 clickableTitle.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -233,7 +275,14 @@
 
                 // Wait to avoid Code 429 before copying code
                 await sleep(1000);
-                copyJob(job);
+
+                // Only copy job data if job has not already been applied to
+                if(!document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR)){
+                    copyJob(job);
+                } else {
+                    jobsSkipped++;
+                    toast(`Skipping job: ${iter + 1}`);
+                }
 
                 // Crawl Next Job on List
                 if(iter < maxJobs){
@@ -244,7 +293,7 @@
                 }
                 // Handle issue with page load.
             } else {
-                reattempt(iter, attempt, { job, jobId });
+                reattempt(iter, attempt, { job });
             }
         }
         processJob();

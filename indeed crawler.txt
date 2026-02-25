@@ -27,18 +27,20 @@
     let stopFunc = { ...STOP_FUNC_DEFAULT, firstRun: true };
     // Flag for in progress crawl operation.
     let crawlerInProgress = false;
-
+    let startTime;
     const JOB_ITEM_SELECTOR = '#mosaic-provider-jobcards > div:first-of-type > ul:first-of-type > li > div.result:not([aria-hidden="true"])';
     const JOB_ID_ELEMENT_SELECTOR = '.jobTitle > a'; // query from JOB_ITEM_SELECTOR
     const JOB_SALARY_SELECTOR = 'ul.metadataContainer > li.salary-snippet-container > div:first-of-type > div > span'; // query from JOB_ITEM_SELECTOR
     const CLICKABLE_SELECTOR = '.jcs-JobTitle > span';
-
     const JOB_DESCRIPTION_SELECTOR = 'div#jobDescriptionText';
-
     const NEXT_PAGE_BUTTON_SELECTOR = 'a[data-testid="pagination-page-next"]';
-
+    const ALREADY_APPLIED_BUTTON_SELECTOR = 'indeed-apply-status-applied'
     const JOB_DIVIDER_TEXT = '\n=-=-=-=-=\n';
     const MAX_JOB_PROCESS_ATTEMPTS = 10;
+    const ONE_SECOND = 1000;
+    const ONE_MINUTE_IN_SECONDS = 60
+    const ONE_HOUR = 3600000
+
     let localData = GM_getValue(LOCAL_STORAGE_KEY, LOCAL_DATA_DEFAULT)
 
     let jobData = localData.jobData || '';
@@ -59,11 +61,11 @@
     }
 
     // Raise a on-screen message (toast)
-    const toast = (msg, ms = 2000) => {
-        console.log('Toast:', msg);
+    const toast = (msg, ms = 10000) => {
+        console.log('Toast:', msg.replace('<br/>', '\n'));
         toastElement?.remove();
         toastElement = document.createElement("div");
-        toastElement.textContent = msg;
+        toastElement.innerHTML = msg;
         Object.assign(toastElement.style, {
             position: "fixed",
             top: '200px',
@@ -77,6 +79,10 @@
             zIndex: 999999,
             maxWidth: "40vw",
             lineHeight: "1.3",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center'
         });
         document.body.appendChild(toastElement);
         setTimeout(() => toastElement.remove(), ms);
@@ -131,6 +137,30 @@
         const salary = jobInfoButtons?.innerText || jobInfoButtons?.textContent || "";
         return salary ? `\nSALARY: ${salary}\n`: ''
     }
+
+    const toastJobUpdate = (jobNo, skipped = 0) => {
+        if (!startTime) {
+            alert("Error: toastJobUpdate called with unset start time");
+            return;
+        }
+
+        const pad2 = (n) => String(Math.floor(n)).padStart(2, "0");
+
+        const timeInSeconds = parseFloat((performance.now() - startTime) / ONE_SECOND); // number
+        const hours = Math.floor(timeInSeconds / ONE_HOUR);
+
+        let remaining_time = timeInSeconds - hours * ONE_HOUR;
+        const minutes = Math.floor(remaining_time / ONE_MINUTE_IN_SECONDS);
+        const seconds = Math.floor(remaining_time % ONE_MINUTE_IN_SECONDS);
+
+        // Always show mm:ss, and if hours exist show hh:mm:ss (with leading zeros)
+        const timeStr = `${hours > 0 ? pad2(hours) + ':': ''}${pad2(minutes)}:${pad2(seconds)}`
+
+        const skippedJobsText = skipped ? `<br /> ${skipped} Skipped`: ''
+
+        toast(`Job: ${jobNo} <br/> ${timeStr}${skippedJobsText}`);
+    };
+
 
     const cleanJobData = () => {
         jobData = jobData.replace(/(\s*\n\s*){3,}/g, "\n\n")
@@ -188,8 +218,10 @@
 
 
     const jobCollector = async () => {
+        startTime = performance.now();
         crawlerInProgress = true;
         let jobList, maxJobs;
+        let jobsSkipped = 0;
 
         // Returns elements needed for iterating through list of jobs.
         const getJobListElements = () => {
@@ -202,11 +234,12 @@
             // Move to next page or finish crawl
             const button = document.querySelector(NEXT_PAGE_BUTTON_SELECTOR);
             if(!button){
-                copyJobDataToClipboard();
                 GM_setValue(LOCAL_STORAGE_KEY, {
                     inProgress: false,
                     jobData,
                 });
+                copyJobDataToClipboard();
+                console.timeEnd(TIMER_LABEL);
                 alert('Crawl Complete, press alt-2 to copy results to clipboard')
             } else {
                 GM_setValue(LOCAL_STORAGE_KEY, {
@@ -234,7 +267,8 @@
             const job = jobList[iter];
             const clickable = job?.querySelector(CLICKABLE_SELECTOR);
             if(clickable) {
-                toast(`Clicking #${iter + 1}`, 900);
+                const timeStamp = ((performance.now() - startTime) / ONE_SECOND).toFixed(2);
+                toastJobUpdate(iter + 1, jobsSkipped);
                 // Scroll currently viewed job into view on job list.
                 clickable.scrollIntoView({
                     behavior: 'smooth',
@@ -248,7 +282,14 @@
 
                 // Wait to avoid Code 429 before copying code
                 await sleep(1250);
-                copyJob(job);
+
+                // Only copy job data if job has not already been applied to
+                if(!document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR)){
+                    copyJob(job);
+                } else {
+                    jobsSkipped++;
+                    toast(`Skipping job: ${iter + 1}`);
+                }
 
                 // Crawl Next Job on List
                 if(iter < maxJobs){
