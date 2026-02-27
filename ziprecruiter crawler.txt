@@ -46,9 +46,9 @@
     const ONE_MINUTE_IN_SECONDS = 60
     const ONE_HOUR = 3600000
     const REPLACE_IN_URL = [
-        '&refine_by_location_type=&',
-        '&refine_by_apply_type=&',
-        '&refine_by_experience_level=&'
+        'refine_by_location_type=&',
+        'refine_by_apply_type=&',
+        'refine_by_experience_level=&'
         ]
 
     let jobData = GM_getValue(LOCAL_STORAGE_KEY, LOCAL_DATA_DEFAULT).jobData || '';
