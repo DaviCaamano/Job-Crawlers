@@ -59,7 +59,7 @@ Davi Caamano
             '2': '',
             '3': '',
             '4': '',
-            '5': '',
+            '5': 'Florida',
             '6': '',
             '7': '',
             '8': '',
@@ -199,6 +199,22 @@ Davi Caamano
         }
     };
 
+    const translateKeys = (key) => {
+        switch(key.toLowerCase()){
+            case 'insert': return [true, '0'];
+            case 'end': return [true, '1'];
+            case 'arrowdown': return [true, '2'];
+            case 'pagedown': return [true, '3'];
+            case 'arrowleft': return [true, '4'];
+            case 'clear': return [true, '5'];
+            case 'arrowright': return [true, '6'];
+            case 'home': return [true, '7'];
+            case 'arrowup': return [true, '8'];
+            case 'pageup': return [true, '9'];
+            default: return [false, key];
+        }
+    }
+
     window.addEventListener(
         "keydown",
         (e) => {
@@ -234,16 +250,15 @@ Davi Caamano
             e.preventDefault();
             e.stopPropagation();
 
-            const key = e?.key;
-            console.log('key', key)
-
-
+            const [shiftKey, key] = translateKeys(e?.key)
+            console.log('key', key);
+            console.log('shiftKey', shiftKey);
             if(/^[0-9]$/.test(key)){
-                if(e.shiftKey){
+                if(shiftKey){
                     if(!!hotKeys.shift[key]){
                         insertText(hotKeys.shift[key], el);
                     }
-                } if(e.ctrlKey){
+                } else if(e.ctrlKey){
                     if(!!hotKeys.ctrl[key]){
                         insertText(hotKeys.ctrl[key], el);
                     }
