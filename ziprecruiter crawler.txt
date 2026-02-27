@@ -38,13 +38,18 @@
     //+ ' > div:first-of-type > div:first-of-type >
     const JOB_SALARY_SELECTOR = 'div.break-all > p';
 
-    const NEXT_PAGE_BUTTON_SELECTOR = 'a[title="Next Page"]';
+    const NEXT_PAGE_BUTTON_SELECTOR = '[title="Next Page"]';
 
     const JOB_DIVIDER_TEXT = '\n=-=-=-=-=\n';
     const MAX_JOB_PROCESS_ATTEMPTS = 10;
     const ONE_SECOND = 1000;
     const ONE_MINUTE_IN_SECONDS = 60
     const ONE_HOUR = 3600000
+    const REPLACE_IN_URL = [
+        '&refine_by_location_type=&',
+        '&refine_by_apply_type=&',
+        '&refine_by_experience_level=&'
+        ]
 
     let jobData = GM_getValue(LOCAL_STORAGE_KEY, LOCAL_DATA_DEFAULT).jobData || '';
     let page = 0;
@@ -197,7 +202,12 @@
         }
         const text = getJobText(jobDescription);
         const title = getJobTitle(jobElement);
-        const url = `\nURL: ${window.location.href}\n`;
+        let url = `\nURL: ${window.location.href}\n`;
+        // Get rid of unused fields in the URL so the URL is less than 255 characters long
+        // (Excel sheet does not allow links larger than 255 characters)
+        for(const stringToReplace of REPLACE_IN_URL){
+            url = url.replace(stringToReplace, '');
+        }
         const salary = getJobSalary(jobElement);
         jobData += JOB_DIVIDER_TEXT + title + url + salary + '\n' + text;
     }
@@ -225,7 +235,6 @@
             page += 1;
             // Move to next page or finish crawl
             const button = document.querySelector(NEXT_PAGE_BUTTON_SELECTOR);
-            console.log('button', button.disalbed, button);
             if(!button || button.disabled){
                 copyJobDataToClipboard();
                 alert('Crawl Complete, press alt-2 to copy results to clipboard')

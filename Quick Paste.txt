@@ -12,6 +12,24 @@
 
 (function() {
     'use strict';
+    const coverLetter = `Hiring Manager,
+With over six years of experience designing and deploying scalable full-stack
+applications within the typescript/node ecosystem of frameworks, I bring a strong
+blend of technical depth, leadership, and collaborative problem-solving to every
+project.
+In my recent roles at Orsini IT, ShiftPixy and LegitScript, I built and maintained
+complex web applications leveraging the Node.Js ecosystem of frameworks including:
+React.Js, Next.js, Angular.Js, Nest.js, React Native.Js (Mobile) and Node.Js itself
+hosted on AWS Lambda serverless instances.
+For Orisini IT and Shift Pixy, I started my position in entry level roles (intern/Jr.
+Developer respectively) and in less than six months I was elevated to the position of
+team lead due to my habit of taking widespread ownership of the projects I work on,
+my serious commitment to facilitate communication across team members and subteams, and my eagerness at which I tend to take initiative.
+Thank you for considering my application. I’d love the opportunity to discuss how my
+technical expertise and leadership experience can help drive success in this role.
+Sincerely,
+Davi Caamano
+(786) 879 - 0802 `
     const hotKeys = {
         '0': 'DaviSantaCaamano@gmail.com',
         '1': 'Davi',
@@ -23,6 +41,30 @@
         '7': 'https://www.linkedin.com/in/davi-caamano-8a440b157/',
         '8': 'https://DaviCaamano.com/',
         '9': 'https://github.com/DaviCaamano',
+        'shift': {
+            '0': '',
+            '1': 'Santa',
+            '2': '',
+            '3': '',
+            '4': '12933 sw 210 terrace, Miami FL, 33177',
+            '5': 'Florida',
+            '6': 'FL',
+            '7': coverLetter,
+            '8': '',
+            '9': '',
+        },
+        'ctrl':  {
+            '0': '',
+            '1': '',
+            '2': '',
+            '3': '',
+            '4': '',
+            '5': '',
+            '6': '',
+            '7': '',
+            '8': '',
+            '9': '',
+        }
     }
     const LOCAL_STORAGE_KEY = 'tamper-monkey-quick-paste';
     const LOCAL_DATA_DEFAULT = { enabled: true };
@@ -195,8 +237,19 @@
             const key = e?.key;
             console.log('key', key)
 
-            if(/^[0-9]$/.test(key) && !!hotKeys[key]){
-                insertText(hotKeys[key], el);
+
+            if(/^[0-9]$/.test(key)){
+                if(e.shiftKey){
+                    if(!!hotKeys.shift[key]){
+                        insertText(hotKeys.shift[key], el);
+                    }
+                } if(e.ctrlKey){
+                    if(!!hotKeys.ctrl[key]){
+                        insertText(hotKeys.ctrl[key], el);
+                    }
+                } else if(!!hotKeys[key]){
+                    insertText(hotKeys[key], el);
+                }
             }
         },
         true // capture helps on sites that stopPropagation
