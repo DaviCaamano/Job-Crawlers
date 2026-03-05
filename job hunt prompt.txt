@@ -148,4 +148,5 @@ The excel sheet should have three columns
 When you are done making the excel sheet, can you remove any duplicate rows?
 A duplicate row is a row that has a value in Column D that matches a the value in the same column of any row above it.
 
+Finally, can you sort the sheet by company name
 
