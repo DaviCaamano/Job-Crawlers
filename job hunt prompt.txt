@@ -1,0 +1,156 @@
+Ignore all previous instructions.
+
+I am going to give you a file with a long list of programming job recruitment posts. Each job recruitment post starts with the following text: "=-=-=-=-=".
+Each job is structured in this template:
+
+"
+=-=-=-=-=
+
+TITLE: <title text>
+
+URL: <url text>
+
+SALARY: <salary text>
+
+Company Name: <company name text>
+
+<job application description text>
+"
+
+Please remove all job recruitment posts from that text file that does not pass the following Regex:
+(?im)^(?!.*URL:.*\breact\b).*?\breact\b.*$
+
+==================
+
+I'd like you to make additional changes to that text file.
+
+I'd like you to remove any job recruitment posts with any of the following words in its title: (whole word, case insensitive).
+- backend
+- "back end"
+- "back-end"
+- lead
+- manager
+- architect
+- president
+- vp
+- python
+- go
+- java
+- AI
+- "Artificial Intelligence"
+- rust
+- ruby
+- rails
+- devops
+- devsecops
+- contract
+- .net
+- c#
+- integration
+- android
+- native
+- infrastructure
+- angular
+- ios
+- windows
+- kotlin
+- c++
+- llm
+- coinbase
+- head
+- director
+- sales 
+- mobile
+- servicenow
+- php
+- laravel
+- principal
+- hybrid
+- forward
+- storyblok
+- designer
+- consultant
+- analyst
+- temporary
+- salesforce
+- vue
+- vue.js
+- nurse
+- elixir
+- specialist
+- sharepoint
+- supabase
+- electron
+- field
+- solar
+- filenet
+- systems
+- elasticsearch
+- platform
+- onsite
+- web3
+- wordpress
+- word press
+- hybird
+- security
+- clearance
+- shopify
+- golang
+- "talent pool"
+
+Each word in the list above should check for whole words only (ie: java is included in the list, but javascript is not)
+
+==================
+
+I'd like you to make additional changes to that text file.
+
+I'd like you to remove any job recruitment posts that has any of the following words in it (whole word, case insensitive).
+
+- "Call For Referral"
+- "Ruby on Rails"
+- "web3"
+- "word press"
+- "wordpress"
+
+Each word in the list above should check for whole words only (ie: java is included in the list, but javascript is not)
+
+=================
+
+I'd like you to make additional changes to that text file.
+
+I'd like you to remove any job recruitment posts that have any of the following company names (whole words should be evaluated, list is not case senstive)
+
+- "underdog.io"
+- "Crossing Hurdles"
+- "HelixRecruit"
+- "Base44"
+- "Affinitiv"
+- "hypergiant"
+- "Roblox",
+- "bitpay",
+- "imentor",
+- "servicecore"
+- "service core"
+- "Trapp Technology"
+- "Trust & Will"
+- "SERHANT"
+- "Workweek Media"
+- "Swarm"
+- "IXL Learning"
+- "Cherry Hill Programs"
+- "Bright Vision Technologies"
+
+=================
+
+Okay, now I need you to turn that text file into an excel sheet (.xlsx)
+
+The excel sheet should have three columns
+- Column A displays the job's company name
+- Column B displays the job's title
+- Column C should be set to =HYPERLINK(B:B,"APPLY HERE")
+- Column D should display the URL
+
+When you are done making the excel sheet, can you remove any duplicate rows?
+A duplicate row is a row that has a value in Column D that matches a the value in the same column of any row above it.
+
+
