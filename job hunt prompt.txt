@@ -22,8 +22,9 @@ Please remove all job recruitment posts from that text file that does not pass t
 
 ==================
 
-I'd like you to make additional changes to that text file.
+I'd like you to make three additional changes to that text file.
 
+Change #1:
 I'd like you to remove any job recruitment posts with any of the following words in its title: (whole word, case insensitive).
 - backend
 - "back end"
@@ -100,10 +101,8 @@ I'd like you to remove any job recruitment posts with any of the following words
 
 Each word in the list above should check for whole words only (ie: java is included in the list, but javascript is not)
 
-==================
 
-I'd like you to make additional changes to that text file.
-
+Change #2:
 I'd like you to remove any job recruitment posts that has any of the following words in it (whole word, case insensitive).
 
 - "Call For Referral"
@@ -114,10 +113,7 @@ I'd like you to remove any job recruitment posts that has any of the following w
 
 Each word in the list above should check for whole words only (ie: java is included in the list, but javascript is not)
 
-=================
-
-I'd like you to make additional changes to that text file.
-
+Change #3:
 I'd like you to remove any job recruitment posts that have any of the following company names (whole words should be evaluated, list is not case senstive)
 
 - "underdog.io"
@@ -139,7 +135,6 @@ I'd like you to remove any job recruitment posts that have any of the following 
 - "IXL Learning"
 - "Cherry Hill Programs"
 - "Bright Vision Technologies"
-
 =================
 
 Okay, now I need you to turn that text file into an excel sheet (.xlsx)
@@ -147,7 +142,7 @@ Okay, now I need you to turn that text file into an excel sheet (.xlsx)
 The excel sheet should have three columns
 - Column A displays the job's company name
 - Column B displays the job's title
-- Column C should be set to =HYPERLINK(B:B,"APPLY HERE")
+- Column C should be set to =HYPERLINK(D:D,"APPLY HERE")
 - Column D should display the URL
 
 When you are done making the excel sheet, can you remove any duplicate rows?
