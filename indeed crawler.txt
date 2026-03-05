@@ -29,7 +29,7 @@
     let crawlerInProgress = false;
     let startTime;
     const JOB_ITEM_SELECTOR = '#mosaic-provider-jobcards > div:first-of-type > ul:first-of-type > li > div.result:not([aria-hidden="true"])';
-    const JOB_ID_ELEMENT_SELECTOR = '.jobTitle > a'; // query from JOB_ITEM_SELECTOR
+    const JOB_ID_ELEMENT_SELECTOR = '.jcs-JobTitle > span'; // query from JOB_ITEM_SELECTOR
     const JOB_SALARY_SELECTOR = 'ul.metadataContainer > li.salary-snippet-container > div:first-of-type > div > span'; // query from JOB_ITEM_SELECTOR
     const COMPANY_NAME_SELECTOR = '[data-testid="company-name"]';
     const CLICKABLE_SELECTOR = '.jcs-JobTitle > span';
@@ -124,18 +124,14 @@
     }
 
     const getJobTitle = (jobElement) => {
-        const idElement = jobElement.querySelector(JOB_ID_ELEMENT_SELECTOR).id.replace('job_', '');
-
-        const title = document.querySelector('#jobTitle-' + idElement)?.textContent.trim();
-        if(title){
-            return `\nTITLE: ${title}\n`;
-        }
-        return '';
+        const titleElement = jobElement.querySelector(JOB_ID_ELEMENT_SELECTOR)
+        const title = (titleElement.innerText || titleElement.textContent || "").trim();;
+        return `\nTITLE: ${title}\n`;
     }
 
     const getJobSalary = (jobElement) => {
         const jobInfoButtons = jobElement.querySelector(JOB_SALARY_SELECTOR);
-        const salary = jobInfoButtons?.innerText || jobInfoButtons?.textContent || "";
+        const salary = (jobInfoButtons?.innerText || jobInfoButtons?.textContent || "").trim();
         return salary ? `\nSALARY: ${salary}\n`: ''
     }
 
