@@ -39,7 +39,7 @@
     ]
     const JOB_TTL_AMT_SELECTOR = '.jobs-search-results-list__subtitle > span';
     const ALREADY_APPLIED_BUTTON_SELECTOR = '#jobs-apply-see-application-link';
-
+    const COMPANY_NAME_SELECTOR = '.job-details-jobs-unified-top-card__company-name > a';
     const JOB_DIVIDER_TEXT = '\n=-=-=-=-=\n';
     const MAX_JOB_PROCESS_ATTEMPTS = 10;
     const MAX_JOB_COPY_ATTEMPTS = 5;
@@ -184,6 +184,12 @@
         return '';
     }
 
+    const getJobCompanyName = () => {
+        const companyNameElement = document.querySelector(COMPANY_NAME_SELECTOR);
+        const text = companyNameElement.innerText || companyNameElement.textContent || "";
+        return `\nCompany Name: ${text}\n`;
+    }
+
     const getJobTtlAmt = () => {
         const jobTtlAmtSpan = document.querySelector(JOB_TTL_AMT_SELECTOR);
         return (jobTtlAmtSpan.innerText || jobTtlAmtSpan.textContent || jobTtlAmtSpan.innerHtml || "").replace(/\D/g, "")
@@ -250,7 +256,8 @@
             const title = getJobTitle();
             const url = `\nURL: ${window.location.href}\n`;
             const salary = getJobSalary();
-            jobData += JOB_DIVIDER_TEXT + title + url + salary + text;
+            const companyName = getJobCompanyName();
+            jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + '\n' + text;
             resolve();
         }
 

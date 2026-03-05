@@ -30,6 +30,7 @@
     const JOB_ITEM_SELECTOR = 'section.job_results_two_pane > div.job_result_two_pane_v2';
     const TITLE_SELECTOR = 'article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     + ' > div:first-of-type > button:first-of-type > div:first-of-type > div:first-of-type > h2';
+    const COMPANY_NAME_SELECTOR = '[data-testid="job-card-company"]';
     const JOB_DESCRIPTION_SELECTOR = '.text-primary.whitespace-pre-line.wrap-anywhere'
     const JOB_TTL_AMT_SELECTOR = '#serp_content_skip > p';
     const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
@@ -145,6 +146,12 @@
         return salary ? `\nSALARY: ${salary}\n`: ''
     }
 
+    const getJobCompanyName = (jobElement) => {
+        const companyNameElement = jobElement.querySelector(COMPANY_NAME_SELECTOR)
+        const companyName = (companyNameElement?.innerText || companyNameElement?.textContent || "").trim();
+        return `\nCompany Name: ${companyName}\n`
+    }
+
     const getJobTtlAmt = () => {
         const jobTtlAmtSpan = document.querySelector(JOB_TTL_AMT_SELECTOR);
         return (jobTtlAmtSpan.innerText || jobTtlAmtSpan.textContent || jobTtlAmtSpan.innerHtml || "").replace(/\D/g, "")
@@ -209,7 +216,8 @@
             url = url.replace(stringToReplace, '');
         }
         const salary = getJobSalary(jobElement);
-        jobData += JOB_DIVIDER_TEXT + title + url + salary + '\n' + text;
+        const companyName = getJobCompanyName(jobElement);
+        jobData += JOB_DIVIDER_TEXT + title + url + salary + companyName + '\n' + text;
     }
 
 

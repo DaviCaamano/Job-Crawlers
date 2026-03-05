@@ -31,6 +31,7 @@
     const JOB_ITEM_SELECTOR = '#mosaic-provider-jobcards > div:first-of-type > ul:first-of-type > li > div.result:not([aria-hidden="true"])';
     const JOB_ID_ELEMENT_SELECTOR = '.jobTitle > a'; // query from JOB_ITEM_SELECTOR
     const JOB_SALARY_SELECTOR = 'ul.metadataContainer > li.salary-snippet-container > div:first-of-type > div > span'; // query from JOB_ITEM_SELECTOR
+    const COMPANY_NAME_SELECTOR = '[data-testid="company-name"]';
     const CLICKABLE_SELECTOR = '.jcs-JobTitle > span';
     const JOB_DESCRIPTION_SELECTOR = 'div#jobDescriptionText';
     const NEXT_PAGE_BUTTON_SELECTOR = 'a[data-testid="pagination-page-next"]';
@@ -138,6 +139,12 @@
         return salary ? `\nSALARY: ${salary}\n`: ''
     }
 
+    const getCompanyName = (jobElement) => {
+        const companyNameElement = jobElement.querySelector(COMPANY_NAME_SELECTOR);
+        const companyName = (companyNameElement?.innerText || companyNameElement?.textContent || "").trim();
+        return `\nCompany Name: ${companyName}\n`
+    }
+
     const toastJobUpdate = (jobNo, skipped = 0) => {
         if (!startTime) {
             alert("Error: toastJobUpdate called with unset start time");
@@ -212,7 +219,8 @@
         const title = getJobTitle(jobElement);
         const url = `\nURL: ${window.location.href}\n`;
         const salary = getJobSalary(jobElement);
-        jobData += JOB_DIVIDER_TEXT + title + url + salary + '\n' + text;
+        const companyName = getCompanyName(jobElement);
+        jobData += JOB_DIVIDER_TEXT + title + url + salary + companyName + '\n' + text;
     }
 
 
@@ -239,7 +247,6 @@
                     jobData,
                 });
                 copyJobDataToClipboard();
-                console.timeEnd(TIMER_LABEL);
                 alert('Crawl Complete, press alt-2 to copy results to clipboard')
             } else {
                 GM_setValue(LOCAL_STORAGE_KEY, {

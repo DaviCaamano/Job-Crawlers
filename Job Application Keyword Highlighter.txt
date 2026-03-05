@@ -59,10 +59,15 @@
         "onsite",
         "on site",
         "on-site",
+        "intern",
         "call for referral",
         "word press",
         "wordpress",
         'Clearance',
+        "Shopify",
+        'web3',
+        'webflow',
+        'Ecommerce',
     ]
     const COMPANIES_TO_AVOID = [
         "Rithum",
@@ -81,6 +86,11 @@
         'Trust & Will',
         'SERHANT',
         'Workweek Media',
+        'affinitiv',
+        'swarm',
+        'IXL Learning',
+        "Cherry Hill Programs",
+        "Service Now"
     ]
 
     const BAD_TECH_LIST = [
@@ -105,10 +115,12 @@
         "GraphQL",
         "Graph QL",
         "Graph-QL",
-        "Shopify",
-        'web3',
-        'webflow',
-        'Ecommerce',
+        "ElasticSearch",
+        'Vibe Code',
+        'Vibe Coder',
+        'Vibe-Code',
+        'vibe-coder',
+        'vibecoder',
     ]
 
     const POSITIVE_JOB_QUALITIES = [
@@ -171,6 +183,10 @@
     const GREEN_KEYWORDS = [...GOOD_TECH_LIST].map(i => i.toLowerCase());
 
     const GRAY_KEYWORDS = [...MEH_TECH_LIST, ...WORDS_OF_INTEREST].map(i => i.toLowerCase());
+
+    const isTabFocused = () => {
+        return document.visibilityState === "visible";
+    }
 
     const getKeywordRegex = (words) => {
         if(!words?.length) { return undefined;}
@@ -382,7 +398,9 @@
 
     const startUp = () => {
         if(iter++ < MAX_ITER && active){
-            runHighlighters();
+            if(isTabFocused()){
+                runHighlighters();
+            }
         } else {
             clearInterval(startUpInterval);
         }
