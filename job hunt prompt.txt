@@ -10,9 +10,11 @@ TITLE: <title text>
 
 URL: <url text>
 
+Company_Name: <company name text>
+
 SALARY: <salary text>
 
-Company Name: <company name text>
+Job_ID: <job id>
 
 <job application description text>
 "
@@ -106,7 +108,6 @@ Change #2:
 I'd like you to remove any job recruitment posts that has any of the following words in it (whole word, case insensitive).
 
 - "Call For Referral"
-- "Ruby on Rails"
 - "web3"
 - "word press"
 - "wordpress"
@@ -135,6 +136,14 @@ I'd like you to remove any job recruitment posts that have any of the following 
 - "IXL Learning"
 - "Cherry Hill Programs"
 - "Bright Vision Technologies"
+- "Ambrook"
+- "Bluefish AI"
+- "Johnson Health Tech North America Inc"
+- "First American"
+- "Good Inside"
+- "MIT Human Resources"
+- "ServiceNow"
+
 =================
 
 Okay, now I need you to turn that text file into an excel sheet (.xlsx)
@@ -142,8 +151,11 @@ Okay, now I need you to turn that text file into an excel sheet (.xlsx)
 The excel sheet should have three columns
 - Column A displays the job's company name
 - Column B displays the job's title
-- Column C should be set to =HYPERLINK(D:D,"APPLY HERE")
+- Column C should be set to '=HYPERLINK(D:D,"APPLY HERE")'
 - Column D should display the URL
+- Column E should display the job id
+- Column F should be empty
+- Column G should be set to '=COUNTA(F:F)'
 
 When you are done making the excel sheet, can you remove any duplicate rows?
 A duplicate row is a row that has a value in Column D that matches a the value in the same column of any row above it.

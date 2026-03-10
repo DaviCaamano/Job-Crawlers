@@ -31,6 +31,7 @@
     const TITLE_SELECTOR = 'article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     + ' > div:first-of-type > button:first-of-type > div:first-of-type > div:first-of-type > h2';
     const COMPANY_NAME_SELECTOR = '[data-testid="job-card-company"]';
+    const JOB_ID_SELECTOR = 'article:first-of-type';
     const JOB_DESCRIPTION_SELECTOR = '.text-primary.whitespace-pre-line.wrap-anywhere'
     const JOB_TTL_AMT_SELECTOR = '#serp_content_skip > p';
     const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
@@ -134,10 +135,7 @@
 
     const getJobTitle = (jobElement) => {
         const text = jobElement.querySelector(TITLE_SELECTOR)?.textContent.trim();
-        if(text){
-            return `\nTITLE: ${text}\n`;
-        }
-        return '';
+        return text ? `\nTITLE: ${text}\n`: '';
     }
 
     const getJobSalary = (jobElement) => {
@@ -150,6 +148,13 @@
         const companyNameElement = jobElement.querySelector(COMPANY_NAME_SELECTOR)
         const companyName = (companyNameElement?.innerText || companyNameElement?.textContent || "").trim();
         return `\nCompany Name: ${companyName}\n`
+    }
+
+    const getJobId = (jobElement) => {
+        const text = jobElement.querySelector(JOB_ID_SELECTOR)?.id;
+        console.log('~~', jobElement.querySelector(JOB_ID_SELECTOR));
+        console.log(jobElement.querySelector(JOB_ID_SELECTOR)?.id);
+        return text ? `\nJob_ID: ZR-${text}\n`: '';
     }
 
     const getJobTtlAmt = () => {
@@ -217,7 +222,8 @@
         }
         const salary = getJobSalary(jobElement);
         const companyName = getJobCompanyName(jobElement);
-        jobData += JOB_DIVIDER_TEXT + title + url + salary + companyName + '\n' + text;
+        const jobId = getJobId(jobElement);
+        jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + jobId + '\n' + text;
     }
 
 
@@ -390,7 +396,7 @@
                 toast('Crawl Terminated')
             }
             if(key === '0'){
-                toast(describeHotKeys(), 10000);
+                toast(describeHotKeys());
             }
         }
     }

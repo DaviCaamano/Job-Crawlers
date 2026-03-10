@@ -187,7 +187,7 @@
     const getJobCompanyName = () => {
         const companyNameElement = document.querySelector(COMPANY_NAME_SELECTOR);
         const text = companyNameElement.innerText || companyNameElement.textContent || "";
-        return `\nCompany Name: ${text}\n`;
+        return `\nCompany_Name: ${text}\n`;
     }
 
     const getJobTtlAmt = () => {
@@ -238,7 +238,7 @@
         }
     }
 
-    const copyJob = () => {
+    const copyJob = (jobId) => {
 
         const getJobData = (resolve, attempt = 0) => {
             const description = getjobDescription();
@@ -255,9 +255,10 @@
             const text = getJobText(description);
             const title = getJobTitle();
             const url = `\nURL: ${window.location.href}\n`;
+            const jobIdText = jobId ? `\nJob_ID: LI-${jobId}\n`: '';
             const salary = getJobSalary();
             const companyName = getJobCompanyName();
-            jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + '\n' + text;
+            jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + jobIdText + '\n' + text;
             resolve();
         }
 
@@ -353,7 +354,7 @@
                 await sleep(1500);
                 // Only copy job data if job has not already been applied to
                 if(!document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR)){
-                    copyJob(job);
+                    copyJob(jobId);
                 } else {
                     jobsSkipped++;
                     toast(`Skipping job: ${iter + 1}`);
