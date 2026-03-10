@@ -147,7 +147,7 @@
     const getJobCompanyName = (jobElement) => {
         const companyNameElement = jobElement.querySelector(COMPANY_NAME_SELECTOR)
         const companyName = (companyNameElement?.innerText || companyNameElement?.textContent || "").trim();
-        return `\nCompany Name: ${companyName}\n`
+        return `\nCompany_Name: ${companyName}\n`
     }
 
     const getJobId = (jobElement) => {
