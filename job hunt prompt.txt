@@ -22,6 +22,8 @@ Job_ID: <job id>
 Please remove all job recruitment posts from that text file that does not pass the following Regex:
 (?im)^(?!.*URL:.*\breact\b).*?\breact\b.*$
 
+
+Please let me know how many jobs you read and how many jobs you removed.
 ==================
 
 I'd like you to make three additional changes to that text file.
@@ -143,6 +145,8 @@ I'd like you to remove any job recruitment posts that have any of the following 
 - "Good Inside"
 - "MIT Human Resources"
 - "ServiceNow"
+- "Aquent"
+- "Ambrook"
 
 =================
 
@@ -158,7 +162,7 @@ The excel sheet should have three columns
 - Column G should be set to '=COUNTA(F:F)'
 
 When you are done making the excel sheet, can you remove any duplicate rows?
-A duplicate row is a row that has a value in Column D that matches a the value in the same column of any row above it.
+A duplicate row is a row that has a value in Column D or Column E that matches a the value in the same column of any row above it.
 
 Finally, can you sort the sheet by company name
 

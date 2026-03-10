@@ -151,10 +151,8 @@
     }
 
     const getJobId = (jobElement) => {
-        const text = jobElement.querySelector(JOB_ID_SELECTOR)?.id;
-        console.log('~~', jobElement.querySelector(JOB_ID_SELECTOR));
-        console.log(jobElement.querySelector(JOB_ID_SELECTOR)?.id);
-        return text ? `\nJob_ID: ZR-${text}\n`: '';
+        const id = jobElement.querySelector(JOB_ID_SELECTOR)?.id;
+        return { jobId, idText: id ? `\nJob_ID: ZR-${id}\n`: '' }
     }
 
     const getJobTtlAmt = () => {
@@ -214,16 +212,11 @@
         }
         const text = getJobText(jobDescription);
         const title = getJobTitle(jobElement);
-        let url = `\nURL: ${window.location.href}\n`;
-        // Get rid of unused fields in the URL so the URL is less than 255 characters long
-        // (Excel sheet does not allow links larger than 255 characters)
-        for(const stringToReplace of REPLACE_IN_URL){
-            url = url.replace(stringToReplace, '');
-        }
         const salary = getJobSalary(jobElement);
         const companyName = getJobCompanyName(jobElement);
-        const jobId = getJobId(jobElement);
-        jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + jobId + '\n' + text;
+        const { jobId, idText } = getJobId(jobElement);
+        const url = `\nURL: https://www.ziprecruiter.com/jobseeker/home?lk=${jobId}\n`;
+        jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + idText + '\n' + text;
     }
 
 

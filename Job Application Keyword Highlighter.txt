@@ -90,7 +90,8 @@
         'swarm',
         'IXL Learning',
         "Cherry Hill Programs",
-        "Service Now"
+        "Service Now",
+        "Ambrook",
     ]
 
     const BAD_TECH_LIST = [
