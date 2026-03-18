@@ -152,7 +152,7 @@
 
     const getJobId = (jobElement) => {
         const id = jobElement.querySelector(JOB_ID_SELECTOR)?.id;
-        return { jobId, idText: id ? `\nJob_ID: ZR-${id}\n`: '' }
+        return { jobId: id.replace('job-card-', ''), idText: id ? `\nJob_ID: ZR-${id}\n`: '' }
     }
 
     const getJobTtlAmt = () => {

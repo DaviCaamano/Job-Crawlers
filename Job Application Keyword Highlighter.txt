@@ -13,6 +13,7 @@
 (function () {
     "use strict";
     let active = true;
+    const MORE_INFO_BUTTON_SELECTOR = '[data-testid="expandable-text-button"]'
     const HIGHLIGHTER_CLASS = "__keyword_highlighter_davi_caamano_15315_mark";
     const MISSING_BG_COLOR = 'pink';
     const BOLD_ITALIC = {
@@ -397,10 +398,23 @@
         }
     };
 
+    const expandLinkedInJobApplicationInfo = () => {
+        if (
+            window.location.origin === "https://www.linkedin.com" &&
+            window.location.pathname.startsWith("/jobs/view/")
+        ) {
+            console.log("This is a LinkedIn job view page, pressing more info buttons");
+            document.querySelectorAll(MORE_INFO_BUTTON_SELECTOR).forEach((element) => {
+                element?.click();
+            })
+        }
+    }
+
     const startUp = () => {
         if(iter++ < MAX_ITER && active){
             if(isTabFocused()){
                 runHighlighters();
+                expandLinkedInJobApplicationInfo();
             }
         } else {
             clearInterval(startUpInterval);

@@ -254,7 +254,9 @@
             }
             const text = getJobText(description);
             const title = getJobTitle();
-            const url = `\nURL: ${window.location.href}\n`;
+
+            // const url = `\nURL: ${window.location.href}\n`;
+            const url = `\nURL: https://www.linkedin.com/jobs/view/${jobId}\n`
             const jobIdText = jobId ? `\nJob_ID: LI-${jobId}\n`: '';
             const salary = getJobSalary();
             const companyName = getJobCompanyName();
