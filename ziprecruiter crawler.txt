@@ -35,6 +35,7 @@
     const JOB_DESCRIPTION_SELECTOR = '.text-primary.whitespace-pre-line.wrap-anywhere'
     const JOB_TTL_AMT_SELECTOR = '#serp_content_skip > p';
     const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
+    const REMOTE_STATUS_SELECTOR = '[data-testid="job-details-scroll-container"] h2 + a + div > p';
 
     //article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     //+ ' > div:first-of-type > div:first-of-type >
@@ -132,6 +133,11 @@
             .replace(/[ \t]{2,}/g, " ")
             .trim();
     }
+
+    const jobHasRemoteStatus = () =>
+    document.querySelector(REMOTE_STATUS_SELECTOR)?.textContent.trim().toLowerCase()
+    // Check if anywhere in that string, the word remote exists
+    ?.includes('remote');
 
     const getJobTitle = (jobElement) => {
         const text = jobElement.querySelector(TITLE_SELECTOR)?.textContent.trim();
@@ -292,12 +298,20 @@
                 // Wait to avoid Code 429 before copying code
                 await sleep(1000);
 
+                const jobAlreadyAppliedTo = document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR);
+                const jobIsRemote = jobHasRemoteStatus();
+                console.log(`job:${getJobTitle(job)} applied:${jobAlreadyAppliedTo}, remote:${jobIsRemote}`)
+
                 // Only copy job data if job has not already been applied to
-                if(!document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR)){
+                if(!jobAlreadyAppliedTo && jobIsRemote){
                     copyJob(job);
                 } else {
                     jobsSkipped++;
-                    toast(`Skipping job: ${iter + 1}`);
+
+                    const alreadyAppliedMessage = jobAlreadyAppliedTo ? 'Already Applied': '';
+                    const notARemoteJobMessage = jobIsRemote ? '': 'Not Remote';
+                    const reason = alreadyAppliedMessage & notARemoteJobMessage ? '(Already Applied/Not Remote)': alreadyAppliedMessage + notARemoteJobMessage
+                    toast(`Skipping job: ${iter + 1} (${reason})`);
                 }
 
                 // Crawl Next Job on List
