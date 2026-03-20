@@ -12,6 +12,56 @@
 
 (function () {
     "use strict";
+
+    // Vars needed for Options
+    const REMOTE_STATUS_SELECTOR = '[data-testid="job-details-scroll-container"] h2 + a + div > p';
+    const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
+
+    // OPTIONS
+    const options = {
+        // textFilters and preFilters are arrays that expect JSONs which have two properties
+        // filter:
+        //     functions which return a boolean
+        //         If True the job's data is added to the output
+        //         If False the job's data is discarded from the output
+        //     textFilters also pass a text string representing the job's application's info as a single argument to the function
+        // reason:
+        //     A string representing the reason the job is being filtered
+        textFilters: [
+            // example:
+            // {
+            //     filter: ((text) => /^(?!.*URL:.*\breact\b).*?\breact\b.*$/im.test(text)
+        ],
+        // Filters that run before the job data is collected. If your filter does not require reading the text,
+        // Adding your filter here makes the crawler faster
+        preFilters: [
+            // Filter to remove any job that is not remote
+            {
+                filter: () => document.querySelector(REMOTE_STATUS_SELECTOR)?.textContent.trim().toLowerCase()?.includes('remote'),
+                reason: 'Not Remote'
+            },
+            // Filter to remove any job that you have already applied to
+            {
+                filter: () => !document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR),
+                reason: 'Already Applied',
+            }
+        ]
+    }
+
+    const checkFilters = (text) => {
+        let pass = true;
+        const reasons = [];
+        const filterList = text ? options.textFilters : options.preFilters;
+        for(const { filter, reason } of filterList){
+            if(!filter()){
+                pass = false;
+                reasons.push(reason);
+            }
+        }
+        return { pass, reasons };
+    }
+
+    // Constants
     const LOCAL_STORAGE_KEY = 'tamper-monkey-ziprecruiter-job-data';
     const LOCAL_DATA_DEFAULT = {
         jobData: ''
@@ -34,8 +84,6 @@
     const JOB_ID_SELECTOR = 'article:first-of-type';
     const JOB_DESCRIPTION_SELECTOR = '.text-primary.whitespace-pre-line.wrap-anywhere'
     const JOB_TTL_AMT_SELECTOR = '#serp_content_skip > p';
-    const ALREADY_APPLIED_BUTTON_SELECTOR = '[data-testid="job-details-scroll-container"] [aria-label="Applied"]'
-    const REMOTE_STATUS_SELECTOR = '[data-testid="job-details-scroll-container"] h2 + a + div > p';
 
     //article:first-of-type > section:first-of-type > div:nth-of-type(2)'
     //+ ' > div:first-of-type > div:first-of-type >
@@ -134,11 +182,6 @@
             .trim();
     }
 
-    const jobHasRemoteStatus = () =>
-    document.querySelector(REMOTE_STATUS_SELECTOR)?.textContent.trim().toLowerCase()
-    // Check if anywhere in that string, the word remote exists
-    ?.includes('remote');
-
     const getJobTitle = (jobElement) => {
         const text = jobElement.querySelector(TITLE_SELECTOR)?.textContent.trim();
         return text ? `\nTITLE: ${text}\n`: '';
@@ -157,8 +200,11 @@
     }
 
     const getJobId = (jobElement) => {
-        const id = jobElement.querySelector(JOB_ID_SELECTOR)?.id;
-        return { jobId: id.replace('job-card-', ''), idText: id ? `\nJob_ID: ZR-${id}\n`: '' }
+        const id = jobElement.querySelector(JOB_ID_SELECTOR)?.id?.replace('job-card-', '');
+        if(!id) {
+            return '';
+        }
+        return { jobId: id, idText: id ? `\nJob_ID: ZR-${id}\n`: '' }
     }
 
     const getJobTtlAmt = () => {
@@ -213,16 +259,19 @@
     const copyJob = (jobElement) => {
         const jobDescription = document.querySelector(JOB_DESCRIPTION_SELECTOR);
         if (!jobDescription) {
-            alert("Could not find the job description. Scroll so it loads, then try again.");
-            return;
+            toast("Could not find the job description.");
+            return '';
         }
         const text = getJobText(jobDescription);
         const title = getJobTitle(jobElement);
         const salary = getJobSalary(jobElement);
         const companyName = getJobCompanyName(jobElement);
         const { jobId, idText } = getJobId(jobElement);
+        if(!jobId) {
+            return '';
+        }
         const url = `\nURL: https://www.ziprecruiter.com/jobseeker/home?lk=${jobId}\n`;
-        jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + idText + '\n' + text;
+        return JOB_DIVIDER_TEXT + title + url + companyName + salary + idText + '\n' + text;
     }
 
 
@@ -270,6 +319,11 @@
             }
         }
 
+        const filterJob = (reasons, iter) => {
+            jobsSkipped++;
+            toast(`Skipping job: ${iter + 1} (${reasons.join(' | ')})`);
+        }
+
         // Process an individual job before moving to next.
         async function processJob (iter = stopFunc.stoppedAt, attempt = 0) {
             // If reset flag is set, stop operation.
@@ -298,20 +352,19 @@
                 // Wait to avoid Code 429 before copying code
                 await sleep(1000);
 
-                const jobAlreadyAppliedTo = document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR);
-                const jobIsRemote = jobHasRemoteStatus();
-                console.log(`job:${getJobTitle(job)} applied:${jobAlreadyAppliedTo}, remote:${jobIsRemote}`)
-
-                // Only copy job data if job has not already been applied to
-                if(!jobAlreadyAppliedTo && jobIsRemote){
-                    copyJob(job);
+                // Run preFilters, collect data, and run textFilters
+                // submit data to jobData var if filers pass
+                const preFilter = checkFilters();
+                if(preFilter.pass){
+                    const jobText = copyJob(job);
+                    const textFilter = checkFilters(jobText);
+                    if(textFilter.pass){
+                        jobData += jobText;
+                    } else {
+                        filterJob('text', textFilter.reasons, iter);
+                    }
                 } else {
-                    jobsSkipped++;
-
-                    const alreadyAppliedMessage = jobAlreadyAppliedTo ? 'Already Applied': '';
-                    const notARemoteJobMessage = jobIsRemote ? '': 'Not Remote';
-                    const reason = alreadyAppliedMessage & notARemoteJobMessage ? '(Already Applied/Not Remote)': alreadyAppliedMessage + notARemoteJobMessage
-                    toast(`Skipping job: ${iter + 1} (${reason})`);
+                   filterJob(preFilter.reasons, iter);
                 }
 
                 // Crawl Next Job on List

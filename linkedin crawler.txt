@@ -12,6 +12,50 @@
 
 (function () {
     "use strict";
+
+    // Vars needed for Options
+    const ALREADY_APPLIED_BUTTON_SELECTOR = '#jobs-apply-see-application-link';
+
+    // OPTIONS
+    const options = {
+        // textFilters and preFilters are arrays that expect JSONs which have two properties
+        // filter:
+        //     functions which return a boolean
+        //         If True the job's data is added to the output
+        //         If False the job's data is discarded from the output
+        //     textFilters also pass a text string representing the job's application's info as a single argument to the function
+        // reason:
+        //     A string representing the reason the job is being filtered
+        textFilters: [
+            // example:
+            // {
+            //     filter: ((text) => /^(?!.*URL:.*\breact\b).*?\breact\b.*$/im.test(text)
+        ],
+        // Filters that run before the job data is collected. If your filter does not require reading the text,
+        // Adding your filter here makes the crawler faster
+        preFilters: [
+            // Filter to remove any job that you have already applied to
+            {
+                filter: () => !document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR),
+                reason: 'Already Applied',
+            }
+        ]
+    }
+
+    const checkFilters = (text) => {
+        let pass = true;
+        const reasons = [];
+        const filterList = text ? options.textFilters : options.preFilters;
+        for(const { filter, reason } of filterList){
+            if(!filter()){
+                pass = false;
+                reasons.push(reason);
+            }
+        }
+        return { pass, reasons };
+    }
+
+    // Constants
     const LOCAL_STORAGE_KEY = 'tamper-monkey-linkedin-job-data';
     const LOCAL_DATA_DEFAULT = {
         jobData: ''
@@ -38,7 +82,6 @@
         `[data-occludable-job-id="${jobId}"] .job-card-container--clickable`
     ]
     const JOB_TTL_AMT_SELECTOR = '.jobs-search-results-list__subtitle > span';
-    const ALREADY_APPLIED_BUTTON_SELECTOR = '#jobs-apply-see-application-link';
     const COMPANY_NAME_SELECTOR = '.job-details-jobs-unified-top-card__company-name > a';
     const JOB_DIVIDER_TEXT = '\n=-=-=-=-=\n';
     const MAX_JOB_PROCESS_ATTEMPTS = 10;
@@ -238,35 +281,27 @@
         }
     }
 
-    const copyJob = (jobId) => {
-
-        const getJobData = (resolve, attempt = 0) => {
-            const description = getjobDescription();
-            if (!description) {
-                toast(`Could not find the job description: attempt ${attempt + 1}/${MAX_JOB_COPY_ATTEMPTS}`);
-                if(attempt < MAX_JOB_COPY_ATTEMPTS){
-                    setTimeout(() => getJobData(resolve, attempt + 1), 500 * (attempt + 1))
-                } else {
-                    toast('Failed to retrieve job data, skipping...');
-                    resolve()
-                }
-                return;
+    const copyJob = async (jobId, attempt = 0) => {
+        const description = getjobDescription();
+        if (!description) {
+            toast(`Could not find the job description: attempt ${attempt + 1}/${MAX_JOB_COPY_ATTEMPTS}`);
+            if(attempt < MAX_JOB_COPY_ATTEMPTS){
+                return await copyJob(jobId, attempt + 1), 500 * (attempt + 1);
+            } else {
+                toast('Failed to retrieve job data, skipping...');
+                return '';
             }
-            const text = getJobText(description);
-            const title = getJobTitle();
-
-            // const url = `\nURL: ${window.location.href}\n`;
-            const url = `\nURL: https://www.linkedin.com/jobs/view/${jobId}\n`
-            const jobIdText = jobId ? `\nJob_ID: LI-${jobId}\n`: '';
-            const salary = getJobSalary();
-            const companyName = getJobCompanyName();
-            jobData += JOB_DIVIDER_TEXT + title + url + companyName + salary + jobIdText + '\n' + text;
-            resolve();
+            return '';
         }
 
-        return new Promise((resolve) => {
-            getJobData(resolve);
-        });
+        const text = getJobText(description);
+        const title = getJobTitle();
+
+        const url = `\nURL: https://www.linkedin.com/jobs/view/${jobId}\n`
+        const jobIdText = jobId ? `\nJob_ID: LI-${jobId}\n`: '';
+        const salary = getJobSalary();
+        const companyName = getJobCompanyName();
+        return JOB_DIVIDER_TEXT + title + url + companyName + salary + jobIdText + '\n' + text;
     }
 
 
@@ -316,6 +351,11 @@
             }
         }
 
+        const filterJob = (reasons, iter) => {
+            jobsSkipped++;
+            toast(`Skipping job: ${iter + 1} (${reasons.join(' | ')})`);
+        }
+
         // Process an individual job before moving to next.
         async function processJob (iter = stopFunc.stoppedAt || 0, attempt = 0) {
             // If reset flag is set, stop operation.
@@ -354,12 +394,20 @@
                 toastJobUpdate(jobNo, jobsSkipped);
                 // Wait to avoid Code 429 before copying code
                 await sleep(1500);
-                // Only copy job data if job has not already been applied to
-                if(!document.querySelector(ALREADY_APPLIED_BUTTON_SELECTOR)){
-                    copyJob(jobId);
+
+                // Run preFilters, collect data, and run textFilters
+                // submit data to jobData var if filers pass
+                const preFilter = checkFilters();
+                if(preFilter.pass){
+                    const jobText = await copyJob(jobId);
+                    const textFilter = checkFilters(jobText);
+                    if(textFilter.pass){
+                        jobData += jobText;
+                    } else {
+                        filterJob(textFilter.reasons, iter);
+                    }
                 } else {
-                    jobsSkipped++;
-                    toast(`Skipping job: ${iter + 1}`);
+                   filterJob(preFilter.reasons, iter);
                 }
 
                 // Crawl Next Job on List

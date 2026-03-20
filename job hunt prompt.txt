@@ -19,8 +19,9 @@ Job_ID: <job id>
 <job application description text>
 "
 
-Please remove all job recruitment posts from that text file that does not pass the following Regex:
-(?im)^(?!.*URL:.*\breact\b).*?\breact\b.*$
+Please remove any job that shares a Job_ID with any job above it.
+and please remove all job recruitment posts from that text file that does not pass the following Regex: 
+/(?im)^(?!.*URL:.*\breact\b).*?\breact\b.*$/im
 
 
 Please let me know how many jobs you read and how many jobs you removed.
@@ -147,6 +148,7 @@ I'd like you to remove any job recruitment posts that have any of the following 
 - "ServiceNow"
 - "Aquent"
 - "Ambrook"
+- "Autodesk"
 
 =================
 
